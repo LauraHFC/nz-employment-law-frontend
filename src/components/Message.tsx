@@ -1,0 +1,60 @@
+"use client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { SourcesPanel } from "./SourcesPanel";
+import { FeedbackRow } from "./FeedbackRow";
+import { LoadingDots } from "./LoadingDots";
+import type { ChatMessage } from "@/lib/types";
+
+interface MessageProps {
+  msg: ChatMessage;
+  onRetry: (text: string, loadId: string) => void;
+}
+
+export function Message({ msg, onRetry }: MessageProps) {
+  const isBot = msg.role === "bot";
+
+  return (
+    <div className={`msg ${msg.role}`}>
+      <div className={`avatar ${msg.role}`} aria-hidden="true">
+        {isBot ? "⚖️" : "👤"}
+      </div>
+
+      <div style={{ flex: isBot ? 1 : undefined, minWidth: 0 }}>
+        <div className={`bubble ${msg.role}`}>
+          {msg.loading ? (
+            <LoadingDots label="Searching knowledge base…" />
+          ) : msg.error ? (
+            <div>
+              <div className="error-bubble">⚠️ {msg.errorMsg}</div>
+              {msg.question && (
+                <button
+                  className="retry-btn"
+                  onClick={() => onRetry(msg.question!, msg.id)}
+                >
+                  ↺ Try again
+                </button>
+              )}
+            </div>
+          ) : isBot ? (
+            <div className="md-body">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {msg.text ?? ""}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            msg.text
+          )}
+        </div>
+
+        {isBot && !msg.loading && !msg.error && (msg.sources?.length ?? 0) > 0 && (
+          <SourcesPanel sources={msg.sources!} />
+        )}
+
+        {isBot && !msg.loading && !msg.error && (
+          <FeedbackRow question={msg.question ?? msg.text ?? ""} />
+        )}
+      </div>
+    </div>
+  );
+}

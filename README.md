@@ -1,57 +1,69 @@
 # NZ Employment Law Assistant — Frontend
 
-React / Next.js 14 frontend for the NZ Employment Law RAG chatbot.
+A production React / Next.js 14 frontend for an AI-powered NZ employment law chatbot, built on a Retrieval-Augmented Generation (RAG) pipeline backed by official NZ government sources.
+
+**Live:** [nzlaw.linkiwise.com](https://nzlaw.linkiwise.com)
 
 ---
 
-## Prerequisites
+## Project Overview
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 20.x |
-| npm | ≥ 10.x |
-| Backend API | Running on `http://localhost:8000` |
+This frontend was built as part of a full-stack RAG application that allows users to ask plain-English questions about New Zealand employment law and receive accurate, cited answers drawn from official sources including Employment New Zealand, the ERA, and the Employment Court.
+
+The system was originally prototyped with a Streamlit UI. This React frontend was developed to replace it — delivering a production-quality chat interface with improved UX, extensibility for future knowledge bases, and a clean REST API boundary between frontend and backend.
 
 ---
 
-## Quick Start (< 10 minutes)
+## Tech Stack
 
-### 1. Clone and enter the frontend directory
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Styling | CSS custom properties (design tokens), no CSS framework |
+| Font | Inter via `next/font/google` |
+| Testing | Jest + React Testing Library |
+| Deployment | Vercel |
+| Backend API | FastAPI on Railway (`https://nzlaw-api.linkiwise.com`) |
 
-```bash
-git clone https://github.com/LauraHFC/rag-app-nz-employment-law.git
-cd rag-app-nz-employment-law/frontend
+---
+
+## Architecture
+
+```
+User
+ │
+ ▼
+Next.js Frontend (Vercel)
+ │   nzlaw.linkiwise.com
+ │
+ ├── GET  /api/topics    → fetch available knowledge bases
+ ├── POST /api/query     → submit question, receive answer + sources
+ └── POST /api/feedback  → log thumbs up / down rating
+ │
+ ▼
+FastAPI Backend (Railway)
+ │   
+ │
+ └── RAG Pipeline
+      ├── ChromaDB vectorstore
+      ├── sentence-transformers/all-MiniLM-L6-v2 (embeddings)
+      └── Claude Haiku (answer generation)
 ```
 
-### 2. Install dependencies
+The frontend is fully decoupled from the RAG pipeline — it communicates only via REST API. Adding a new knowledge base requires editing a single frontend config file; no component changes needed.
 
-```bash
-npm install
-```
+---
 
-### 3. Configure environment
+## Key Design Decisions
 
-```bash
-cp .env.local.example .env.local
-```
+**Topic-driven architecture** — Knowledge bases are fetched dynamically from `GET /api/topics` at runtime. The `TopicContext` manages per-topic conversation state, so chat history is isolated between topics. The `TopicSelector` tab appears automatically when two or more topics are active.
 
-Edit `.env.local`:
+**Single config file for new topics** — `src/config/topics.config.ts` is the only file that needs editing when onboarding a new knowledge base. It controls example questions, sidebar description, input placeholder, and empty state copy.
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+**No hardcoded API strings** — All fetch calls are centralised in `src/lib/api.ts`. Components never call `fetch()` directly.
 
-If the backend is already deployed (e.g. Railway), replace the URL with the live backend address.
-
-### 4. Start the dev server
-
-```bash
-npm run dev
-```
-
-App is now available at **http://localhost:3000** — it automatically redirects to `/t/nz_employment_law`.
-
-> **Note:** The app works without the backend running — it falls back to a static topic list and shows friendly error states for failed queries.
+**Graceful degradation** — The app loads without the backend running. Topics fall back to a static list, and failed queries show friendly retry states rather than blank screens.
 
 ---
 
@@ -74,17 +86,17 @@ frontend/
 │   │   ├── Message.tsx
 │   │   ├── WelcomeState.tsx
 │   │   ├── InputBar.tsx
-│   │   ├── SourcesPanel.tsx        # Collapsible citations
-│   │   ├── FeedbackRow.tsx         # 👍/👎 + copy
+│   │   ├── SourcesPanel.tsx        # Collapsible source citations
+│   │   ├── FeedbackRow.tsx         # 👍/👎 + copy to clipboard
 │   │   ├── TopicSelector.tsx       # Hidden until 2+ topics exist
 │   │   ├── Modal.tsx               # Privacy / Disclaimer / Terms
 │   │   └── LoadingDots.tsx
 │   ├── contexts/
-│   │   └── TopicContext.tsx        # Single source of truth for topics
+│   │   └── TopicContext.tsx        # Single source of truth for topics + messages
 │   ├── config/
 │   │   └── topics.config.ts        # Per-topic UI strings — only file to edit when adding a topic
 │   └── lib/
-│       ├── api.ts                  # All fetch calls — never call fetch() directly in components
+│       ├── api.ts                  # All fetch calls
 │       └── types.ts                # Shared TypeScript interfaces
 └── src/__tests__/
     ├── WelcomeState.test.tsx
@@ -94,6 +106,22 @@ frontend/
     ├── Modal.test.tsx
     └── api.integration.test.ts
 ```
+
+---
+
+## Local Development
+
+### Prerequisites
+
+| Tool | Version |
+|------|---------|
+| Node.js | ≥ 20.x |
+| npm | ≥ 10.x |
+
+### Setup
+
+
+App is available at **http://localhost:3000** — redirects automatically to `/t/nz_employment_law`.
 
 ---
 
@@ -111,96 +139,25 @@ frontend/
 
 ---
 
-## Running Tests
+## Testing
 
-```bash
-# All unit tests + coverage report
+# Unit tests + coverage report
 npm test
 
-# Coverage must meet: statements ≥ 80%
-# Output: coverage/lcov-report/index.html
+# Coverage threshold: statements ≥ 80%
+# Report output: coverage/lcov-report/index.html
 
-# Integration test (requires backend running on localhost:8000)
+# Integration test (requires backend)
 npm run test:integration
 ```
 
 ---
 
-## Docker
+## Deployment
 
-```bash
-# Build (from the frontend/ directory)
-docker build \
-  --build-arg NEXT_PUBLIC_API_URL=https://api.nzlaw.linkiwise.com \
-  -t nzlaw-frontend .
-
-# Run
-docker run -p 3000:3000 nzlaw-frontend
-```
-
----
-
-## Adding a New Knowledge Base
-
-When the backend team adds a new topic to `GET /api/topics`, the **only frontend file you need to edit** is:
-
-```
-src/config/topics.config.ts
-```
-
-Add a new entry:
-
-```ts
-export const TOPIC_UI_CONFIG: Record<string, TopicUIConfig> = {
-  nz_employment_law: { ... },   // existing
-
-  health_and_safety: {
-    exampleQuestions: ["What are my rights under the Health and Safety at Work Act?", ...],
-    chips: ["🦺", "⚙️", ...],
-    inputPlaceholder: "Ask about NZ health and safety law…",
-    sidebarDescription: "AI-powered answers about workplace safety in New Zealand.",
-    emptyStateTitle: "Ask anything about NZ health & safety",
-    emptyStateSubtitle: "Answers from official WorkSafe NZ sources.",
-  },
-};
-```
-
-The `TopicSelector` tab appears automatically — no other code changes required.
-
----
-
-## Environment Variables
-
-| Variable | Where | Description |
-|----------|-------|-------------|
-| `NEXT_PUBLIC_API_URL` | `.env.local` | Backend base URL. Default: `http://localhost:8000` |
-
----
-
-## Design System
-
-All design tokens are in `src/app/globals.css` under `:root`. Color palette from handoff doc §5.3:
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--primary-dark` | `#0F2A5C` | Sidebar, user bubble, headings |
-| `--primary-mid` | `#3B6FC7` | Badges, send button hover, focus rings |
-| `--surface-bg` | `#F0F4FA` | Page background |
-| `--surface-card` | `#FFFFFF` | Cards, bot messages, input |
-| `--border` | `#E2E8F0` | Dividers, card borders |
-
-Font: **Inter** (preloaded via `next/font/google`). Fallback: `Segoe UI, sans-serif`.
-
----
-
-## Legal
-
-The disclaimer text in `src/components/Modal.tsx` is a **legal requirement** (handoff doc §5.6 and §9.4). Do not modify, shorten, or rephrase it.
-
----
+The frontend is deployed to **Vercel** via GitHub integration. Every push to `main` triggers an automatic redeploy.
 
 ## Contact
 
-**Project owner:** Laura Cai  
-**LinkedIn:** https://www.linkedin.com/in/laurahfc/  
-**GitHub:** https://github.com/LauraHFC/rag-app-nz-employment-law
+**Project owner:** Laura Cai
+**LinkedIn:** https://www.linkedin.com/in/laurahfc/

@@ -144,10 +144,9 @@ App is available at **http://localhost:3000** — redirects automatically to `/t
 # Unit tests + coverage report
 npm test
 
-# Coverage threshold: statements ≥ 80%
-# Report output: coverage/lcov-report/index.html
-
-# Integration test (requires backend)
+Coverage threshold: statements ≥ 80%
+Report output: coverage/lcov-report/index.html
+Integration test (requires backend)
 npm run test:integration
 ```
 

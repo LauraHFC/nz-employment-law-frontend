@@ -118,13 +118,6 @@ frontend/
 | Node.js | ≥ 20.x |
 | npm | ≥ 10.x |
 
-### Setup
-
-
-App is available at **http://localhost:3000** — redirects automatically to `/t/nz_employment_law`.
-
----
-
 ## Available Scripts
 
 | Command | Description |

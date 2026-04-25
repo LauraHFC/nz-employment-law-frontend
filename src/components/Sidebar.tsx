@@ -28,7 +28,7 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
 
         <div className="sb-logo">
           <div className="icon" aria-hidden="true">⚖️</div>
-          <span>NZ Employment<br />Law Assistant</span>
+          <span>NZ Employment<br />Intelligence</span>
         </div>
 
         <TopicSelector />
@@ -36,7 +36,7 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
         <div className="sb-desc">
           {ui.sidebarDescription}
           <br /><br />
-          <strong>What it covers:</strong>
+          <strong>Employment law:</strong>
           <ul>
             <li>Employment agreements &amp; trial periods</li>
             <li>Leave entitlements (annual, sick, parental)</li>
@@ -44,8 +44,15 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
             <li>Wages, hours &amp; workplace rights</li>
           </ul>
           <br />
+          <strong>Labour market data:</strong>
+          <ul>
+            <li>Unemployment &amp; participation rates</li>
+            <li>Earnings by industry, region &amp; gender</li>
+            <li>Employment trends from Stats NZ</li>
+          </ul>
+          <br />
           <strong>Data sources:</strong><br />
-          Official NZ government websites only.
+          Official NZ government websites &amp; Stats NZ.
           <br /><br />
           <em>Not legal advice. For serious matters, consult a qualified employment lawyer.</em>
         </div>

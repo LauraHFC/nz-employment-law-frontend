@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import type { Source } from "@/lib/types";
+import type { LegalSource } from "@/lib/types";
 
 interface SourcesPanelProps {
-  sources: Source[];
+  sources: LegalSource[];
 }
 
 export function SourcesPanel({ sources }: SourcesPanelProps) {

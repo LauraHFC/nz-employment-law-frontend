@@ -4,7 +4,8 @@ import remarkGfm from "remark-gfm";
 import { SourcesPanel } from "./SourcesPanel";
 import { FeedbackRow } from "./FeedbackRow";
 import { LoadingDots } from "./LoadingDots";
-import type { ChatMessage } from "@/lib/types";
+import { DataChart } from "./DataChart";
+import type { ChatMessage, LegalSource } from "@/lib/types";
 
 interface MessageProps {
   msg: ChatMessage;
@@ -19,7 +20,6 @@ export function Message({ msg, onRetry }: MessageProps) {
       <div className={`avatar ${msg.role}`} aria-hidden="true">
         {isBot ? "⚖️" : "👤"}
       </div>
-
       <div style={{ flex: isBot ? 1 : undefined, minWidth: 0 }}>
         <div className={`bubble ${msg.role}`}>
           {msg.loading ? (
@@ -28,31 +28,43 @@ export function Message({ msg, onRetry }: MessageProps) {
             <div>
               <div className="error-bubble">⚠️ {msg.errorMsg}</div>
               {msg.question && (
-                <button
-                  className="retry-btn"
-                  onClick={() => onRetry(msg.question!, msg.id)}
-                >
+                <button className="retry-btn" onClick={() => onRetry(msg.question!, msg.id)}>
                   ↺ Try again
                 </button>
               )}
             </div>
           ) : isBot ? (
             <div className="md-body">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {msg.text ?? ""}
-              </ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text ?? ""}</ReactMarkdown>
             </div>
           ) : (
             msg.text
           )}
         </div>
 
-        {isBot && !msg.loading && !msg.error && (msg.sources?.length ?? 0) > 0 && (
-          <SourcesPanel sources={msg.sources!} />
+        {/* Chart — data / hybrid responses */}
+        {isBot && !msg.loading && !msg.error && msg.chart && (
+          <DataChart chart={msg.chart} />
         )}
 
+        {/* Out-of-range warning */}
+        {isBot && !msg.loading && !msg.error && msg.outOfRangeWarning && (
+          <div className="warning-banner" role="alert">
+            ⚠️ {msg.outOfRangeWarning}
+          </div>
+        )}
+
+        {/* Sources — legal / hybrid responses */}
+        {isBot && !msg.loading && !msg.error && (msg.sources?.length ?? 0) > 0 && (
+          <SourcesPanel sources={msg.sources as LegalSource[]} />
+        )}
+
+        {/* Feedback */}
         {isBot && !msg.loading && !msg.error && (
-          <FeedbackRow question={msg.question ?? msg.text ?? ""} />
+          <FeedbackRow
+            question={msg.question ?? ""}
+            answer={msg.text ?? ""}
+          />
         )}
       </div>
     </div>

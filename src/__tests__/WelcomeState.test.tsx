@@ -28,7 +28,7 @@ describe("WelcomeState", () => {
   it("renders the empty-state heading", async () => {
     renderWelcome();
     expect(
-      await screen.findByText(/Ask anything about NZ employment law/i)
+      await screen.findByText(/Ask anything about NZ employment/i)
     ).toBeInTheDocument();
   });
 

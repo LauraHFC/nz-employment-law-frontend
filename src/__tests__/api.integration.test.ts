@@ -1,97 +1,93 @@
 /**
- * Integration test — POST /api/query happy path
- * Verifies: topic field is present in request body (§3.2 handoff doc requirement)
+ * Integration test — POST /api/hub/query happy path (v3)
+ * Verifies: correct endpoint, request shape, response fields
  *
- * Run against a live backend:   INTEGRATION=true npx jest api.integration
  * Run with mock (default):      npx jest api.integration
+ * Run against live backend:     INTEGRATION=true npx jest api.integration
  */
 
-import { askQuestion } from "@/lib/api";
+import { askHubQuestion } from "@/lib/api";
 
 const LIVE = process.env.INTEGRATION === "true";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const QUESTION = "How many sick days am I entitled to?";
 
-// ── Mock mode (default — no backend required) ─────────────────────────────────
 if (!LIVE) {
   global.fetch = jest.fn();
 }
 
-describe("POST /api/query — integration", () => {
-  const QUESTION = "How many sick days am I entitled to?";
-  const TOPIC    = "nz_employment_law";
-
+describe("POST /api/hub/query — integration", () => {
   if (!LIVE) {
-    // ── Mock: verifies the request shape and topic param ─────────────────────
     beforeEach(() => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
+          question: QUESTION,
+          intent: "legal",
+          confidence: "high",
           answer: "## Sick Leave\n\nEmployees are entitled to 10 days.",
           sources: [
             {
               title: "Sick leave | Employment New Zealand",
               url: "https://www.employment.govt.nz/leave-and-holidays/sick-leave/",
               content_type: "guide",
-              source_name: "employment_govt_nz",
             },
           ],
-          question: QUESTION,
+          data_sql: null,
+          data_rows: null,
+          out_of_range_warning: null,
+          router_reasoning: "Question is about legal entitlements.",
+          chart: null,
         }),
       });
     });
 
-    it("sends POST to /api/query with correct shape including topic", async () => {
-      await askQuestion(QUESTION, TOPIC);
-
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+    it("calls /api/hub/query — correct URL and method", async () => {
+      await askHubQuestion(QUESTION);
       const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
-
-      // Correct endpoint
-      expect(url).toContain("/api/query");
-
-      // Method
+      expect(url).toContain("/api/hub/query");
       expect(options.method).toBe("POST");
-
-      // Content-Type
       expect(options.headers?.["Content-Type"]).toBe("application/json");
-
-      // Body must include topic field (§3.2 requirement)
-      const body = JSON.parse(options.body);
-      expect(body.topic).toBe(TOPIC);
-      expect(body.question).toBe(QUESTION);
-      expect(typeof body.n_results).toBe("number");
     });
 
-    it("returns answer, sources, and question from response", async () => {
-      const result = await askQuestion(QUESTION, TOPIC);
+    it("request body has question and n_results — no topic param", async () => {
+      await askHubQuestion(QUESTION, 5);
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+      expect(body.question).toBe(QUESTION);
+      expect(body.n_results).toBe(5);
+      expect(body.topic).toBeUndefined(); // topic must NOT be present (v3 contract)
+    });
+
+    it("returns all expected HubQueryResponse fields", async () => {
+      const result = await askHubQuestion(QUESTION);
       expect(result.answer).toContain("Sick Leave");
+      expect(result.intent).toBe("legal");
       expect(result.sources).toHaveLength(1);
       expect(result.sources[0].content_type).toBe("guide");
-      expect(result.question).toBe(QUESTION);
+      expect(result.chart).toBeNull();
+      expect(result.out_of_range_warning).toBeNull();
     });
   } else {
-    // ── Live mode: runs against real backend ─────────────────────────────────
     it("returns a valid response from the live backend", async () => {
-      const result = await askQuestion(QUESTION, TOPIC, 3);
+      const result = await askHubQuestion(QUESTION, 3);
       expect(typeof result.answer).toBe("string");
       expect(result.answer.length).toBeGreaterThan(10);
+      expect(["legal", "data", "hybrid"]).toContain(result.intent);
       expect(Array.isArray(result.sources)).toBe(true);
-      expect(result.question).toBe(QUESTION);
-    }, 15_000); // allow up to 15s for Claude API call
+    }, 15_000);
   }
 });
 
-describe("POST /api/query — error handling", () => {
-  it("throws an error when API returns non-OK status", async () => {
+describe("POST /api/hub/query — error handling", () => {
+  it("throws on non-OK response", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
-      text: async () => '{"detail":"RAG query failed: timeout"}',
+      text: async () => '{"detail":"ANTHROPIC_API_KEY not set"}',
     });
-    await expect(askQuestion("test", TOPIC)).rejects.toThrow();
+    await expect(askHubQuestion("test")).rejects.toThrow();
   });
 
   it("throws on network failure", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(new TypeError("Failed to fetch"));
-    await expect(askQuestion("test", TOPIC)).rejects.toThrow("Failed to fetch");
+    await expect(askHubQuestion("test")).rejects.toThrow("Failed to fetch");
   });
 });

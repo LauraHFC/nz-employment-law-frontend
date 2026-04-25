@@ -15,19 +15,19 @@ export const TOPIC_UI_CONFIG: Record<string, TopicUIConfig> = {
   nz_employment_law: {
     exampleQuestions: [
       "What is the minimum wage in NZ?",
-      "How much notice does an employer need to give?",
       "What are my rights if I'm made redundant?",
       "How many sick days am I entitled to?",
-      "What counts as unjustified dismissal?",
-      "Can my employer change my hours without consent?",
+      "How has the unemployment rate changed over time?",
+      "Compare male vs female earnings by industry",
+      "What is the current unemployment rate in NZ?",
     ],
-    chips: ["💼", "📋", "🚪", "🤒", "⚠️", "🕐"],
-    inputPlaceholder: "Ask a question about NZ employment law…",
+    chips: ["💼", "🚪", "🤒", "📈", "⚖️", "📊"],
+    inputPlaceholder: "Ask about NZ law or labour market data…",
     sidebarDescription:
-      "A free AI-powered tool for understanding New Zealand employment law — for employees and employers alike.",
-    emptyStateTitle: "Ask anything about NZ employment law",
+      "AI-powered answers on New Zealand employment law and labour market statistics — combining legal guidance with official Stats NZ data.",
+    emptyStateTitle: "Ask anything about NZ employment",
     emptyStateSubtitle:
-      "Clear, cited answers grounded in official NZ government sources.",
+      "Employment law · Labour market data · Powered by official NZ government sources",
   },
 
   // ── Add future topics below — no other file needs to change ─────────────────

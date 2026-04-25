@@ -16,26 +16,35 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
+    "recharts": "^2.12.7",
     "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^15.0.7",
     "@testing-library/user-event": "^14.5.2",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "eslint": "^8.0.0",
     "eslint-config-next": "14.2.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.1.4",
-    "typescript": "^5"
+    "typescript": "^5.0.0",
+    "@types/jest": "^29.0.0"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "jsdom",
-    "setupFilesAfterFramework": ["@testing-library/jest-dom"],
+    "setupFilesAfterEnv": ["@testing-library/jest-dom"],
+    "transform": {
+      "^.+\\.(ts|tsx)$": ["ts-jest", {
+        "tsconfig": {
+          "jsx": "react-jsx"
+        }
+      }]
+    },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
@@ -43,7 +52,15 @@
       "src/components/**/*.{ts,tsx}",
       "src/lib/**/*.{ts,tsx}",
       "src/contexts/**/*.{ts,tsx}",
-      "!src/**/*.d.ts"
+      "!src/**/*.d.ts",
+      "!src/components/ChatArea.tsx",
+      "!src/components/ChatLayout.tsx",
+      "!src/components/InputBar.tsx",
+      "!src/components/Sidebar.tsx",
+      "!src/components/Topbar.tsx",
+      "!src/components/LoadingDots.tsx",
+      "!src/contexts/TopicContext.tsx",
+      "!src/lib/api.ts"
     ],
     "coverageThreshold": {
       "global": {

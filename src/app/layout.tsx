@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "NZ Employment Law Assistant",
+  title: "NZ Employment Intelligence",
   description:
-    "Free AI-powered tool for understanding New Zealand employment law — for employees and employers.",
+    "Free AI tool for NZ employment law and labour market data. Legal guidance from official government sources, statistics from Stats NZ.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

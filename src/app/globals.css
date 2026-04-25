@@ -258,6 +258,28 @@ body {
 }
 .retry-btn:hover { background: var(--error-border); }
 
+/* ── Chart ─────────────────────────────────────────────────────────────────── */
+.chart-wrap {
+  margin-top: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 14px 16px 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.chart-title {
+  font-size: .78rem; font-weight: 600; color: var(--primary-dark);
+  margin-bottom: 10px; line-height: 1.4;
+}
+
+/* ── Warning banner ────────────────────────────────────────────────────────── */
+.warning-banner {
+  margin-top: 8px;
+  background: #FFFBEB; border: 1px solid #FDE68A;
+  border-radius: var(--radius-btn); padding: 8px 12px;
+  font-size: .76rem; color: #92400E; line-height: 1.5;
+}
+
 /* ── Sources ───────────────────────────────────────────────────────────────── */
 .sources-area { margin-top: 10px; }
 .sources-toggle {

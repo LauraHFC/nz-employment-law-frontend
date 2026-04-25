@@ -4,10 +4,11 @@ import { useTopicContext } from "@/contexts/TopicContext";
 import { sendFeedback } from "@/lib/api";
 
 interface FeedbackRowProps {
-  question: string;
+  question: string;  // original user question — sent to /api/feedback
+  answer: string;    // bot answer text — copied to clipboard
 }
 
-export function FeedbackRow({ question }: FeedbackRowProps) {
+export function FeedbackRow({ question, answer }: FeedbackRowProps) {
   const { activeTopic } = useTopicContext();
   const [fb, setFb] = useState<"up" | "down" | null>(null);
   const [copied, setCopied] = useState(false);
@@ -19,7 +20,7 @@ export function FeedbackRow({ question }: FeedbackRowProps) {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(question).catch(() => {});
+    navigator.clipboard.writeText(answer).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };

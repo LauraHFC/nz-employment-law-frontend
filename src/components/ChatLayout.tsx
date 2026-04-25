@@ -1,5 +1,4 @@
 "use client";
-// Root layout component — wires sidebar + main together
 import { useState, useCallback } from "react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
@@ -7,7 +6,7 @@ import { ChatArea } from "./ChatArea";
 import { InputBar } from "./InputBar";
 import { Modal, ModalId } from "./Modal";
 import { useTopicContext } from "@/contexts/TopicContext";
-import { askQuestion } from "@/lib/api";
+import { askHubQuestion } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 
 let _id = 0;
@@ -33,33 +32,30 @@ export function ChatLayout() {
         setMessages(activeTopic.id, (prev) => [...prev, userMsg, loadMsg]);
       } else {
         setMessages(activeTopic.id, (prev) =>
-          prev.map((m) => (m.id === loadId ? { ...m, loading: true, error: false } : m))
+          prev.map((m) => m.id === loadId ? { ...m, loading: true, error: false } : m)
         );
       }
 
       try {
-        const result = await askQuestion(text, activeTopic.id);
+        const result = await askHubQuestion(text);
+        const botMsg: ChatMessage = {
+          id: loadId, role: "bot",
+          text: result.answer,
+          sources: result.sources,
+          chart: result.chart,
+          outOfRangeWarning: result.out_of_range_warning,
+          intent: result.intent,
+          question: result.question,
+          loading: false,
+        };
         setMessages(activeTopic.id, (prev) =>
-          prev.map((m) =>
-            m.id === loadId
-              ? {
-                  id: loadId,
-                  role: "bot",
-                  text: result.answer,
-                  sources: result.sources,
-                  question: result.question,
-                  loading: false,
-                }
-              : m
-          )
+          prev.map((m) => m.id === loadId ? botMsg : m)
         );
       } catch (err) {
         const raw = err instanceof Error ? err.message : "Unknown error";
         const errorMsg = raw.includes("Failed to fetch")
           ? "Could not reach the server. Please check your connection."
-          : raw.length < 200
-          ? raw
-          : "Service temporarily unavailable. Please try again later.";
+          : raw.length < 200 ? raw : "Service temporarily unavailable. Please try again later.";
         setMessages(activeTopic.id, (prev) =>
           prev.map((m) =>
             m.id === loadId
@@ -74,18 +70,11 @@ export function ChatLayout() {
     [busy, activeTopic, setMessages]
   );
 
-  const handleClear = () => {
-    if (activeTopic && !busy) clearMessages(activeTopic.id);
-  };
+  const handleClear = () => { if (activeTopic && !busy) clearMessages(activeTopic.id); };
 
   return (
     <div className="app-shell">
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        onModal={setModal}
-      />
-
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onModal={setModal} />
       <div className="main">
         <Topbar
           onHamburger={() => setSidebarOpen(true)}
@@ -93,12 +82,9 @@ export function ChatLayout() {
           health={health}
           onHealthChange={setHealth}
         />
-
         <ChatArea onSend={handleSend} onRetry={handleSend} />
-
         <InputBar onSend={handleSend} busy={busy} onModal={setModal} />
       </div>
-
       {modal && <Modal id={modal} onClose={() => setModal(null)} />}
     </div>
   );

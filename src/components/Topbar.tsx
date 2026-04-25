@@ -40,7 +40,7 @@ export function Topbar({ onHamburger, onClear, health, onHealthChange }: TopbarP
         >
           ☰
         </button>
-        <h1>⚖️ NZ Employment Law Assistant</h1>
+        <h1>⚖️ NZ Employment Intelligence</h1>
         <span className="badge">Free · Beta</span>
         <div
           className={`health-dot ${health ?? ""}`}

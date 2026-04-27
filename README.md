@@ -1,69 +1,59 @@
-# NZ Employment Law Assistant — Frontend
+# NZ Employment Intelligence Hub — Frontend
 
-A production React / Next.js 14 frontend for an AI-powered NZ employment law chatbot, built on a Retrieval-Augmented Generation (RAG) pipeline backed by official NZ government sources.
+React / Next.js 14 frontend for the NZ Employment Intelligence Hub — a dual-channel AI system combining employment law RAG and Stats NZ labour market Text-to-SQL.
 
-**Live:** [nzlaw.linkiwise.com](https://nzlaw.linkiwise.com)
-
----
-
-## Project Overview
-
-This frontend was built as part of a full-stack RAG application that allows users to ask plain-English questions about New Zealand employment law and receive accurate, cited answers drawn from official sources including Employment New Zealand, the ERA, and the Employment Court.
-
-The system was originally prototyped with a Streamlit UI. This React frontend was developed to replace it — delivering a production-quality chat interface with improved UX, extensibility for future knowledge bases, and a clean REST API boundary between frontend and backend.
+Live at **[nzlaw.linkiwise.com](https://nzlaw.linkiwise.com)**
 
 ---
 
-## Tech Stack
+## Prerequisites
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript |
-| Styling | CSS custom properties (design tokens), no CSS framework |
-| Font | Inter via `next/font/google` |
-| Testing | Jest + React Testing Library |
-| Deployment | Vercel |
-| Backend API | FastAPI on Railway (`https://nzlaw-api.linkiwise.com`) |
+| Tool | Version |
+|------|---------|
+| Node.js | ≥ 20.x |
+| npm | ≥ 10.x |
+| Backend API | Running on `http://localhost:8000` |
 
 ---
 
-## Architecture
+## Quick Start (< 10 minutes)
 
-```
-User
- │
- ▼
-Next.js Frontend (Vercel)
- │   nzlaw.linkiwise.com
- │
- ├── GET  /api/topics    → fetch available knowledge bases
- ├── POST /api/query     → submit question, receive answer + sources
- └── POST /api/feedback  → log thumbs up / down rating
- │
- ▼
-FastAPI Backend (Railway)
- │   
- │
- └── RAG Pipeline
-      ├── ChromaDB vectorstore
-      ├── sentence-transformers/all-MiniLM-L6-v2 (embeddings)
-      └── Claude Haiku (answer generation)
+### 1. Clone and enter the frontend directory
+
+```bash
+git clone https://github.com/LauraHFC/nz-employment-law-frontend.git
+cd nz-employment-law-frontend
 ```
 
-The frontend is fully decoupled from the RAG pipeline — it communicates only via REST API. Adding a new knowledge base requires editing a single frontend config file; no component changes needed.
+### 2. Install dependencies
 
----
+```bash
+npm install
+```
 
-## Key Design Decisions
+### 3. Configure environment
 
-**Topic-driven architecture** — Knowledge bases are fetched dynamically from `GET /api/topics` at runtime. The `TopicContext` manages per-topic conversation state, so chat history is isolated between topics. The `TopicSelector` tab appears automatically when two or more topics are active.
+```bash
+cp .env.local.example .env.local
+```
 
-**Single config file for new topics** — `src/config/topics.config.ts` is the only file that needs editing when onboarding a new knowledge base. It controls example questions, sidebar description, input placeholder, and empty state copy.
+Edit `.env.local`:
 
-**No hardcoded API strings** — All fetch calls are centralised in `src/lib/api.ts`. Components never call `fetch()` directly.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-**Graceful degradation** — The app loads without the backend running. Topics fall back to a static list, and failed queries show friendly retry states rather than blank screens.
+If the backend is already deployed (e.g. Railway), replace with the live backend URL.
+
+### 4. Start the dev server
+
+```bash
+npm run dev
+```
+
+App available at **http://localhost:3000**.
+
+> **Note:** The app works without the backend running — it falls back to a static topic list and shows friendly error states for failed queries.
 
 ---
 
@@ -74,31 +64,34 @@ frontend/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx              # Root layout, font preload
-│   │   ├── globals.css             # All CSS — design tokens + components
+│   │   ├── globals.css             # Design tokens + component styles (incl. chart + warning banner)
 │   │   ├── page.tsx                # / → redirect to /t/<first active topic>
 │   │   └── t/[topicId]/
 │   │       └── page.tsx            # Main chat page
 │   ├── components/
-│   │   ├── ChatLayout.tsx          # Root layout component
+│   │   ├── ChatLayout.tsx          # Root layout — calls askHubQuestion()
 │   │   ├── Sidebar.tsx
 │   │   ├── Topbar.tsx
 │   │   ├── ChatArea.tsx
-│   │   ├── Message.tsx
+│   │   ├── Message.tsx             # Renders text + DataChart + warning banner + sources
+│   │   ├── DataChart.tsx           # Recharts chart component (line/bar/grouped_bar/pie)
 │   │   ├── WelcomeState.tsx
 │   │   ├── InputBar.tsx
-│   │   ├── SourcesPanel.tsx        # Collapsible source citations
-│   │   ├── FeedbackRow.tsx         # 👍/👎 + copy to clipboard
+│   │   ├── SourcesPanel.tsx        # Collapsible legal citations
+│   │   ├── FeedbackRow.tsx         # 👍/👎 + copy answer
 │   │   ├── TopicSelector.tsx       # Hidden until 2+ topics exist
 │   │   ├── Modal.tsx               # Privacy / Disclaimer / Terms
 │   │   └── LoadingDots.tsx
 │   ├── contexts/
-│   │   └── TopicContext.tsx        # Single source of truth for topics + messages
+│   │   └── TopicContext.tsx        # Single source of truth for topics
 │   ├── config/
 │   │   └── topics.config.ts        # Per-topic UI strings — only file to edit when adding a topic
 │   └── lib/
-│       ├── api.ts                  # All fetch calls
-│       └── types.ts                # Shared TypeScript interfaces
+│       ├── api.ts                  # askHubQuestion() + legacy askQuestion()
+│       └── types.ts                # HubQueryResponse, ChartConfig, LegalSource, ChatMessage
 └── src/__tests__/
+    ├── DataChart.test.tsx
+    ├── Message.test.tsx
     ├── WelcomeState.test.tsx
     ├── SourcesPanel.test.tsx
     ├── FeedbackRow.test.tsx
@@ -109,14 +102,37 @@ frontend/
 
 ---
 
-## Local Development
+## Key v3 Changes
 
-### Prerequisites
+### New: `DataChart.tsx`
+Recharts-based chart component. Renders automatically when a data query returns a `chart` config in the response.
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 20.x |
-| npm | ≥ 10.x |
+Supported chart types: `line` · `bar` · `grouped_bar` · `pie`
+
+### New: `HubQueryResponse` type
+All chat messages now carry optional `chart`, `outOfRangeWarning`, and `intent` fields alongside the existing `answer` and `sources`.
+
+```ts
+interface HubQueryResponse {
+  answer: string
+  intent: "legal" | "data" | "hybrid"
+  sources?: LegalSource[]
+  chart?: ChartConfig
+  outOfRangeWarning?: string
+}
+```
+
+### New: `askHubQuestion()` in `api.ts`
+Calls `POST /api/hub/query` — the unified backend endpoint that handles all three query types. The legacy `askQuestion()` is preserved for backward compatibility but not used in the main chat flow.
+
+### Updated: `Message.tsx`
+Renders all v3 response fields:
+- Natural language answer (all query types)
+- `DataChart` component (data and hybrid queries)
+- Warning banner for out-of-range queries
+- `SourcesPanel` with legal citations (legal and hybrid queries)
+
+---
 
 ## Available Scripts
 
@@ -132,24 +148,95 @@ frontend/
 
 ---
 
-## Testing
+## Running Tests
 
-# Unit tests + coverage report
+```bash
+# All unit tests + coverage report
 npm test
 
-Coverage threshold: statements ≥ 80%
-Report output: coverage/lcov-report/index.html
-Integration test (requires backend)
+# Coverage threshold: statements ≥ 80%  (current: 87.91%)
+# Output: coverage/lcov-report/index.html
+
+# Integration test (requires backend running on localhost:8000)
 npm run test:integration
 ```
 
 ---
 
-## Deployment
+## Docker
 
-The frontend is deployed to **Vercel** via GitHub integration. Every push to `main` triggers an automatic redeploy.
+```bash
+# Build (from the frontend/ directory)
+docker build \
+  --build-arg NEXT_PUBLIC_API_URL=https://nzlaw-api.linkiwise.com \
+  -t nzlaw-frontend .
 
-## Contact
+# Run
+docker run -p 3000:3000 nzlaw-frontend
+```
 
-**Project owner:** Laura Cai
-**LinkedIn:** https://www.linkedin.com/in/laurahfc/
+---
+
+## Environment Variables
+
+| Variable | Where | Description |
+|----------|-------|-------------|
+| `NEXT_PUBLIC_API_URL` | `.env.local` | Backend base URL. Default: `http://localhost:8000` |
+
+---
+
+## API Reference
+
+The frontend calls a single unified endpoint for all queries:
+
+```
+POST /api/hub/query
+Body: { "question": string, "topic_id"?: string }
+
+Response: HubQueryResponse {
+  answer:             string
+  intent:             "legal" | "data" | "hybrid"
+  sources?:           LegalSource[]       // legal + hybrid only
+  chart?:             ChartConfig         // data + hybrid only
+  outOfRangeWarning?: string
+}
+```
+
+The backend's Query Router classifies each question and routes it automatically — the frontend does not need to know the intent in advance.
+
+---
+
+## Design System
+
+All design tokens are in `src/app/globals.css` under `:root`:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary-dark` | `#0F2A5C` | Sidebar, user bubble, headings |
+| `--primary-mid` | `#3B6FC7` | Badges, send button hover, focus rings |
+| `--surface-bg` | `#F0F4FA` | Page background |
+| `--surface-card` | `#FFFFFF` | Cards, bot messages, input |
+| `--border` | `#E2E8F0` | Dividers, card borders |
+
+Chart and warning banner styles: `.chart-wrap`, `.chart-title`, `.warning-banner` (added in v3).
+
+Font: **Inter** (preloaded via `next/font/google`). Fallback: `Segoe UI, sans-serif`.
+
+---
+
+## Legal
+
+The disclaimer text in `src/components/Modal.tsx` is a **legal requirement**. Do not modify, shorten, or rephrase it.
+
+---
+
+## Related
+
+| Repo | Description |
+|------|-------------|
+| [rag-app-nz-employment-law](https://github.com/LauraHFC/rag-app-nz-employment-law) | Data pipeline + FastAPI backend |
+| [nz-employment-law-frontend](https://github.com/LauraHFC/nz-employment-law-frontend) | This repo |
+
+---
+
+**Author:** Laura Cai · [Portfolio](https://linkiwise.com) · [LinkedIn](https://www.linkedin.com/in/laurahfc/)

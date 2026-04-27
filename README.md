@@ -1,6 +1,6 @@
 # NZ Employment Intelligence Hub — Frontend
 
-React / Next.js 14 frontend for the NZ Employment Intelligence Hub — a dual-channel AI system combining employment law RAG and Stats NZ labour market Text-to-SQL.
+React / Next.js 14 frontend for the NZ Employment Intelligence Hub — a dual-channel AI system combining employment law RAG and Stats NZ labour market Text-to-SQL to Insights engine.
 
 Live at **[nzlaw.linkiwise.com](https://nzlaw.linkiwise.com)**
 

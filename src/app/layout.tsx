@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "NZ Employment Intelligence",
+  title: "NZ Law Compass",
   description:
-    "Free AI tool for NZ employment law and labour market data. Legal guidance from official government sources, statistics from Stats NZ.",
+    "Free knowledge tool for NZ employment law, tax rules, and labour market data. Information from official government sources — IRD, Stats NZ, and legislation.govt.nz. General information only, not legal or tax advice.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

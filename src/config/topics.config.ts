@@ -16,18 +16,18 @@ export const TOPIC_UI_CONFIG: Record<string, TopicUIConfig> = {
     exampleQuestions: [
       "What is the minimum wage in NZ?",
       "What are my rights if I'm made redundant?",
-      "How many sick days am I entitled to?",
+      "How do GST rules apply to small businesses?",
+      "How is PAYE calculated on my salary?",
       "How has the unemployment rate changed over time?",
       "Compare male vs female earnings by industry",
-      "What is the current unemployment rate in NZ?",
     ],
-    chips: ["💼", "🚪", "🤒", "📈", "⚖️", "📊"],
-    inputPlaceholder: "Ask about NZ law or labour market data…",
+    chips: ["💼", "🚪", "🧾", "💰", "📈", "⚖️"],
+    inputPlaceholder: "Ask about NZ law, tax, or labour market data…",
     sidebarDescription:
-      "AI-powered answers on New Zealand employment law and labour market statistics — combining legal guidance with official Stats NZ data.",
-    emptyStateTitle: "Ask anything about NZ employment",
+      "Knowledge from official NZ government sources — employment law, tax rules, and labour market statistics. Information only, not legal or tax advice.",
+    emptyStateTitle: "Find your way through NZ law",
     emptyStateSubtitle:
-      "Employment law · Labour market data · Powered by official NZ government sources",
+      "Employment law · Tax rules · Labour market data · Powered by official NZ government sources",
   },
 
   // ── Add future topics below — no other file needs to change ─────────────────

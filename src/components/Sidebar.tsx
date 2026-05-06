@@ -27,8 +27,8 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
         </button>
 
         <div className="sb-logo">
-          <div className="icon" aria-hidden="true">⚖️</div>
-          <span>NZ Employment<br />Intelligence</span>
+          <div className="icon" aria-hidden="true">🧭</div>
+          <span>NZ Law<br />Compass</span>
         </div>
 
         <TopicSelector />
@@ -44,6 +44,14 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
             <li>Wages, hours &amp; workplace rights</li>
           </ul>
           <br />
+          <strong>Tax rules:</strong>
+          <ul>
+            <li>GST registration &amp; obligations</li>
+            <li>Income tax &amp; PAYE</li>
+            <li>KiwiSaver contributions</li>
+            <li>Self-employment &amp; business tax basics</li>
+          </ul>
+          <br />
           <strong>Labour market data:</strong>
           <ul>
             <li>Unemployment &amp; participation rates</li>
@@ -52,9 +60,9 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
           </ul>
           <br />
           <strong>Data sources:</strong><br />
-          Official NZ government websites &amp; Stats NZ.
+          Official NZ government websites, Inland Revenue (IRD) &amp; Stats NZ.
           <br /><br />
-          <em>Not legal advice. For serious matters, consult a qualified employment lawyer.</em>
+          <em>General information only — not legal or tax advice. For your specific situation, consult a qualified employment lawyer, tax advisor, or accountant.</em>
         </div>
 
         <hr className="sb-divider" />

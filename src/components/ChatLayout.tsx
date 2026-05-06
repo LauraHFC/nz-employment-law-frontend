@@ -5,8 +5,9 @@ import { Topbar } from "./Topbar";
 import { ChatArea } from "./ChatArea";
 import { InputBar } from "./InputBar";
 import { Modal, ModalId } from "./Modal";
+import { DisclaimerModal, useDisclaimerGate } from "./DisclaimerModal";
 import { useTopicContext } from "@/contexts/TopicContext";
-import { askHubQuestion } from "@/lib/api";
+import { askAgentQuestion } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 
 let _id = 0;
@@ -18,6 +19,10 @@ export function ChatLayout() {
   const [modal, setModal] = useState<ModalId | null>(null);
   const [busy, setBusy] = useState(false);
   const [health, setHealth] = useState<"ok" | "error" | null>(null);
+  // Disclaimer gate — show blocking modal until user accepts
+  const showDisclaimer = useDisclaimerGate();
+  const [disclaimerDone, setDisclaimerDone] = useState(false);
+  const [declined, setDeclined] = useState(false);
 
   const handleSend = useCallback(
     async (text: string, retryId?: string) => {
@@ -37,15 +42,16 @@ export function ChatLayout() {
       }
 
       try {
-        const result = await askHubQuestion(text);
+        const result = await askAgentQuestion(text);
         const botMsg: ChatMessage = {
           id: loadId, role: "bot",
           text: result.answer,
           sources: result.sources,
           chart: result.chart,
-          outOfRangeWarning: result.out_of_range_warning,
-          intent: result.intent,
+          outOfRangeWarning: null,
           question: result.question,
+          riskBadge: result.risk_badge,
+          refused: result.refused,
           loading: false,
         };
         setMessages(activeTopic.id, (prev) =>
@@ -72,8 +78,49 @@ export function ChatLayout() {
 
   const handleClear = () => { if (activeTopic && !busy) clearMessages(activeTopic.id); };
 
+  // Declined state — show a locked screen with referral info
+  if (declined) {
+    return (
+      <div className="app-shell disclaimer-declined-shell">
+        <div className="disclaimer-declined-card">
+          <span aria-hidden="true" style={{ fontSize: "2rem" }}>⚖️</span>
+          <h1>This tool is not available without accepting the disclaimer.</h1>
+          <p>
+            If you need legal help, please contact:
+          </p>
+          <ul>
+            <li>
+              <a href="https://communitylaw.org.nz" target="_blank" rel="noopener noreferrer">
+                Community Law
+              </a>{" "}— free legal help
+            </li>
+            <li>Citizens Advice Bureau — 0800 367 222</li>
+          </ul>
+          <button
+            className="disclaimer-modal__btn disclaimer-modal__btn--accept"
+            style={{ marginTop: "1.5rem" }}
+            onClick={() => {
+              setDeclined(false);
+              // sessionStorage key is absent so modal will reappear
+            }}
+          >
+            Review disclaimer again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
+      {/* Blocking disclaimer modal — shown until user accepts */}
+      {showDisclaimer && !disclaimerDone && (
+        <DisclaimerModal
+          onAccept={() => setDisclaimerDone(true)}
+          onDecline={() => setDeclined(true)}
+        />
+      )}
+
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onModal={setModal} />
       <div className="main">
         <Topbar

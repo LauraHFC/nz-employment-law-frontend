@@ -1,5 +1,13 @@
-// lib/api.ts — v3
-import type { Topic, HubQueryResponse, QueryResponse, HealthResponse } from "./types";
+// lib/api.ts — v4
+import type {
+  Topic,
+  HubQueryResponse,
+  QueryResponse,
+  HealthResponse,
+  AgentQueryResponse,
+  ConsentAcknowledgeRequest,
+  ConsentAcknowledgeResponse,
+} from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -14,6 +22,32 @@ export async function askHubQuestion(
     body: JSON.stringify({ question, n_results }),
   });
   if (!res.ok) throw new Error(await res.text().catch(() => "Unknown error"));
+  return res.json();
+}
+
+// ── Agent endpoint (v4 — full risk-control pipeline) ─────────────────────────
+export async function askAgentQuestion(
+  question: string
+): Promise<AgentQueryResponse> {
+  const res = await fetch(`${API_BASE}/api/agent/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) throw new Error(await res.text().catch(() => "Unknown error"));
+  return res.json();
+}
+
+// ── Consent acknowledgement (v4) ──────────────────────────────────────────────
+export async function acknowledgeConsent(
+  payload: ConsentAcknowledgeRequest
+): Promise<ConsentAcknowledgeResponse> {
+  const res = await fetch(`${API_BASE}/api/consent/acknowledge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await res.text().catch(() => "Consent log failed"));
   return res.json();
 }
 

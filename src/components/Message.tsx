@@ -5,6 +5,7 @@ import { SourcesPanel } from "./SourcesPanel";
 import { FeedbackRow } from "./FeedbackRow";
 import { LoadingDots } from "./LoadingDots";
 import { DataChart } from "./DataChart";
+import { RiskBadge } from "./RiskBadge";
 import type { ChatMessage, LegalSource } from "@/lib/types";
 
 interface MessageProps {
@@ -41,6 +42,11 @@ export function Message({ msg, onRetry }: MessageProps) {
             msg.text
           )}
         </div>
+
+        {/* Risk badge — agent endpoint responses only */}
+        {isBot && !msg.loading && !msg.error && msg.riskBadge && (
+          <RiskBadge badge={msg.riskBadge} />
+        )}
 
         {/* Chart — data / hybrid responses */}
         {isBot && !msg.loading && !msg.error && msg.chart && (

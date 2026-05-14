@@ -59,12 +59,14 @@ export async function fetchTopics(): Promise<Topic[]> {
 }
 
 export async function sendFeedback(
-  question: string, rating: "up" | "down", topic: string
+  traceId: string,
+  rating: "up" | "down",
+  comment?: string,
 ): Promise<void> {
   await fetch(`${API_BASE}/api/feedback`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, rating, topic }),
+    body: JSON.stringify({ trace_id: traceId, rating, comment: comment ?? null }),
   }).catch(() => {});
 }
 

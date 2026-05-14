@@ -2,10 +2,11 @@
 // DisclaimerModal.tsx — First-message disclaimer modal (v4 risk controls)
 //
 // Behaviour:
-//   - Shown on first page load if sessionStorage key "disclaimer_v1_accepted" is absent.
+//   - NOT shown on page load. Triggered by ChatLayout when the user first submits
+//     a question and localStorage key "disclaimer_v1_accepted" is absent.
 //   - Non-dismissible: cannot be closed by clicking outside or pressing Escape.
 //   - Three required checkboxes — all must be checked before "I Accept" is enabled.
-//   - "I Accept" → POSTs event_type "first_message_disclaimer", sets sessionStorage flag,
+//   - "I Accept" → POSTs event_type "first_message_disclaimer", sets localStorage flag,
 //     calls onAccept().
 //   - "I Disagree" → POSTs event_type "disclaimer_declined", calls onDecline() which
 //     should redirect or show a locked state.
@@ -18,7 +19,13 @@ import type { ConsentAcknowledgeRequest } from "@/lib/types";
 // ── Constants ──────────────────────────────────────────────────────────────────
 const DISCLAIMER_VERSION = "1.0";
 const PRIVACY_POLICY_VERSION = "1.0";
-const SESSION_KEY = "disclaimer_v1_accepted";
+const STORAGE_KEY = "disclaimer_v1_accepted";
+
+// ── Public util — used by ChatLayout to check acceptance without mounting hook ─
+export function hasAcceptedDisclaimer(): boolean {
+  if (typeof window === "undefined") return true; // SSR: don't block
+  return !!localStorage.getItem(STORAGE_KEY);
+}
 
 // Stable session ID: generate once per browser session, persist in sessionStorage.
 function getOrCreateSessionId(): string {
@@ -76,7 +83,7 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
     if (!allChecked || posting) return;
     setPosting(true);
     await postConsent("first_message_disclaimer");
-    sessionStorage.setItem(SESSION_KEY, "true");
+    localStorage.setItem(STORAGE_KEY, new Date().toISOString());
     onAccept();
   };
 
@@ -217,14 +224,3 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
   );
 }
 
-// ── Hook: useDisclaimerGate ────────────────────────────────────────────────────
-// Returns whether the modal should be shown.
-// Safe to call during SSR (defaults to false until hydration).
-export function useDisclaimerGate(): boolean {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const accepted = sessionStorage.getItem(SESSION_KEY);
-    if (!accepted) setShow(true);
-  }, []);
-  return show;
-}

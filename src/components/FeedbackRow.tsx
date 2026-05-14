@@ -1,22 +1,24 @@
 "use client";
 import { useState } from "react";
-import { useTopicContext } from "@/contexts/TopicContext";
 import { sendFeedback } from "@/lib/api";
 
 interface FeedbackRowProps {
-  question: string;  // original user question — sent to /api/feedback
-  answer: string;    // bot answer text — copied to clipboard
+  answer: string;         // bot answer text — copied to clipboard
+  traceId: string | null; // Langfuse trace ID; null if tracing disabled
 }
 
-export function FeedbackRow({ question, answer }: FeedbackRowProps) {
-  const { activeTopic } = useTopicContext();
+export function FeedbackRow({ answer, traceId }: FeedbackRowProps) {
   const [fb, setFb] = useState<"up" | "down" | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleFeedback = async (rating: "up" | "down") => {
-    if (fb || !activeTopic) return;
+    if (fb) return;
     setFb(rating);
-    await sendFeedback(question, rating, activeTopic.id);
+    if (traceId) {
+      await sendFeedback(traceId, rating);
+    }
+    // If traceId is null (Langfuse disabled in env), feedback is silently
+    // dropped — there is no durable store to write to without Langfuse.
   };
 
   const handleCopy = () => {

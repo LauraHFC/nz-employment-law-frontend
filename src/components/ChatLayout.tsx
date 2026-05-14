@@ -5,7 +5,7 @@ import { Topbar } from "./Topbar";
 import { ChatArea } from "./ChatArea";
 import { InputBar } from "./InputBar";
 import { Modal, ModalId } from "./Modal";
-import { DisclaimerModal, useDisclaimerGate } from "./DisclaimerModal";
+import { DisclaimerModal, hasAcceptedDisclaimer } from "./DisclaimerModal";
 import { useTopicContext } from "@/contexts/TopicContext";
 import { askAgentQuestion } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
@@ -19,14 +19,23 @@ export function ChatLayout() {
   const [modal, setModal] = useState<ModalId | null>(null);
   const [busy, setBusy] = useState(false);
   const [health, setHealth] = useState<"ok" | "error" | null>(null);
-  // Disclaimer gate — show blocking modal until user accepts
-  const showDisclaimer = useDisclaimerGate();
-  const [disclaimerDone, setDisclaimerDone] = useState(false);
+  // Disclaimer gate — modal shown on first submit if not yet accepted
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [declined, setDeclined] = useState(false);
 
   const handleSend = useCallback(
     async (text: string, retryId?: string) => {
       if (!text.trim() || busy || !activeTopic) return;
+
+      // Gate: if user has not accepted the disclaimer yet, stash the question
+      // and show the modal. On accept, the stashed question is submitted automatically.
+      if (!hasAcceptedDisclaimer()) {
+        setPendingQuestion(text);
+        setShowDisclaimer(true);
+        return;
+      }
+
       setBusy(true);
 
       const loadId = retryId ?? nextId();
@@ -52,6 +61,7 @@ export function ChatLayout() {
           question: result.question,
           riskBadge: result.risk_badge,
           refused: result.refused,
+          traceId: result.trace_id ?? null,
           loading: false,
         };
         setMessages(activeTopic.id, (prev) =>
@@ -78,6 +88,14 @@ export function ChatLayout() {
 
   const handleClear = () => { if (activeTopic && !busy) clearMessages(activeTopic.id); };
 
+  // Called when user accepts the disclaimer — resume the stashed question.
+  const handleDisclaimerAccept = useCallback(() => {
+    setShowDisclaimer(false);
+    const q = pendingQuestion;
+    setPendingQuestion(null);
+    if (q) handleSend(q);
+  }, [pendingQuestion, handleSend]);
+
   // Declined state — show a locked screen with referral info
   if (declined) {
     return (
@@ -101,7 +119,7 @@ export function ChatLayout() {
             style={{ marginTop: "1.5rem" }}
             onClick={() => {
               setDeclined(false);
-              // sessionStorage key is absent so modal will reappear
+              // localStorage key is absent so modal will reappear on next send
             }}
           >
             Review disclaimer again
@@ -113,11 +131,11 @@ export function ChatLayout() {
 
   return (
     <div className="app-shell">
-      {/* Blocking disclaimer modal — shown until user accepts */}
-      {showDisclaimer && !disclaimerDone && (
+      {/* Disclaimer modal — shown on first question submit if not yet accepted */}
+      {showDisclaimer && (
         <DisclaimerModal
-          onAccept={() => setDisclaimerDone(true)}
-          onDecline={() => setDeclined(true)}
+          onAccept={handleDisclaimerAccept}
+          onDecline={() => { setShowDisclaimer(false); setDeclined(true); }}
         />
       )}
 

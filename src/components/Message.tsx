@@ -68,8 +68,8 @@ export function Message({ msg, onRetry }: MessageProps) {
         {/* Feedback */}
         {isBot && !msg.loading && !msg.error && (
           <FeedbackRow
-            question={msg.question ?? ""}
             answer={msg.text ?? ""}
+            traceId={msg.traceId ?? null}
           />
         )}
       </div>

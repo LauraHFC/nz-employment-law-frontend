@@ -24,6 +24,8 @@ export interface ChatMessage {
   // Risk-control fields (agent endpoint)
   riskBadge?: AgentQueryResponse["risk_badge"];
   refused?: boolean;
+  // Observability (Sprint 5)
+  traceId?: string | null;
   loading?: boolean; error?: boolean; errorMsg?: string;
 }
 export type ConversationStore = Record<string, ChatMessage[]>;
@@ -79,6 +81,8 @@ export interface AgentQueryResponse {
   crisis_route_fired: boolean;
   regeneration_count: number;
   risk_badge: "general_info" | "high_care" | "please_get_advice" | "refused";
+  // Observability (Sprint 5)
+  trace_id: string | null;
 }
 
 // ── Consent types (v4) ────────────────────────────────────────────────────────

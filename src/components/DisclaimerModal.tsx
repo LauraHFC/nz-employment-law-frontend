@@ -1,11 +1,16 @@
 "use client";
-// DisclaimerModal.tsx — First-message disclaimer modal (v4 risk controls)
+// DisclaimerModal.tsx — First-message disclaimer modal (Sprint 6 simplified)
+//
+// Sprint 6: 3 checkboxes → 1 checkbox.
+// Sprint 4's three-checkbox modal was friction without proportionate safety
+// value — users either checked all three reflexively or bounced. One clear
+// affirmative is enough.
 //
 // Behaviour:
 //   - NOT shown on page load. Triggered by ChatLayout when the user first submits
 //     a question and localStorage key "disclaimer_v1_accepted" is absent.
 //   - Non-dismissible: cannot be closed by clicking outside or pressing Escape.
-//   - Three required checkboxes — all must be checked before "I Accept" is enabled.
+//   - ONE required checkbox — must be checked before "I Accept" is enabled.
 //   - "I Accept" → POSTs event_type "first_message_disclaimer", sets localStorage flag,
 //     calls onAccept().
 //   - "I Disagree" → POSTs event_type "disclaimer_declined", calls onDecline() which
@@ -17,9 +22,9 @@ import { acknowledgeConsent } from "@/lib/api";
 import type { ConsentAcknowledgeRequest } from "@/lib/types";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
-const DISCLAIMER_VERSION = "1.0";
+const DISCLAIMER_VERSION = "2.0";  // bump on Sprint 6 (single-checkbox model)
 const PRIVACY_POLICY_VERSION = "1.0";
-const STORAGE_KEY = "disclaimer_v1_accepted";
+const STORAGE_KEY = "disclaimer_v2_accepted";  // bump key so existing users re-prompt
 
 // ── Public util — used by ChatLayout to check acceptance without mounting hook ─
 export function hasAcceptedDisclaimer(): boolean {
@@ -48,17 +53,8 @@ interface DisclaimerModalProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
   const uid = useId();
-  const [checks, setChecks] = useState({
-    general_info: false,
-    no_reliance: false,
-    read_policies: false,
-  });
+  const [acknowledged, setAcknowledged] = useState(false);
   const [posting, setPosting] = useState(false);
-
-  const allChecked = checks.general_info && checks.no_reliance && checks.read_policies;
-
-  const toggle = (key: keyof typeof checks) =>
-    setChecks((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const postConsent = async (
     event_type: ConsentAcknowledgeRequest["event_type"]
@@ -67,7 +63,10 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
       const payload: ConsentAcknowledgeRequest = {
         session_id: getOrCreateSessionId(),
         event_type,
-        checkbox_states: { ...checks },
+        // Sprint 6: single ack flag. Backend schema still accepts the
+        // checkbox_states dict; we send one key for forward-compat with audit
+        // reports that aggregate by checkbox.
+        checkbox_states: { acknowledged },
         user_agent: navigator.userAgent,
         ui_locale: navigator.language || "en-NZ",
         disclaimer_version: DISCLAIMER_VERSION,
@@ -80,7 +79,7 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
   };
 
   const handleAccept = async () => {
-    if (!allChecked || posting) return;
+    if (!acknowledged || posting) return;
     setPosting(true);
     await postConsent("first_message_disclaimer");
     localStorage.setItem(STORAGE_KEY, new Date().toISOString());
@@ -115,80 +114,47 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
         <div className="disclaimer-modal__header">
           <span className="disclaimer-modal__icon" aria-hidden="true">⚖️</span>
           <h2 id={`${uid}-modal-title`} className="disclaimer-modal__title" tabIndex={-1}>
-            Before you continue — please read this
+            Before you continue
           </h2>
         </div>
 
         <div id={`${uid}-modal-desc`} className="disclaimer-modal__body">
           <p>
             This tool provides <strong>general legal information</strong> about New Zealand
-            employment and tax law. It is <strong>not legal advice</strong> and does not create
-            a lawyer–client relationship.
+            employment and tax law. It is <strong>not legal advice</strong>, does not create a
+            lawyer–client relationship, and should not be relied on for decisions about your
+            specific situation.
           </p>
           <p>
-            The information is drawn from publicly available sources last retrieved as of the
-            date shown in each response. Laws change — always verify with an authoritative
-            source before acting.
-          </p>
-          <p>
-            <strong>Do not rely on this tool</strong> for decisions about your specific
-            situation. If you need advice, please consult a qualified legal professional or
-            contact{" "}
+            For tailored help, contact{" "}
             <a href="https://communitylaw.org.nz" target="_blank" rel="noopener noreferrer">
               Community Law
             </a>{" "}
-            (free help available) or{" "}
+            (free) or{" "}
             <a href="https://www.cab.org.nz" target="_blank" rel="noopener noreferrer">
               Citizens Advice Bureau
             </a>
-            .
+            . See our{" "}
+            <a href="/disclaimer" target="_blank" rel="noopener noreferrer">Disclaimer</a>
+            {" "}and{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
           </p>
         </div>
 
         <fieldset className="disclaimer-modal__checks">
-          <legend className="disclaimer-modal__checks-legend">
-            Please confirm you understand:
+          <legend className="disclaimer-modal__checks-legend visually-hidden">
+            Please confirm to continue
           </legend>
 
           <label className="disclaimer-modal__check-row">
             <input
               type="checkbox"
-              checked={checks.general_info}
-              onChange={() => toggle("general_info")}
+              checked={acknowledged}
+              onChange={() => setAcknowledged((v) => !v)}
             />
             <span>
-              I understand this is <strong>general information only</strong>, not legal advice.
-            </span>
-          </label>
-
-          <label className="disclaimer-modal__check-row">
-            <input
-              type="checkbox"
-              checked={checks.no_reliance}
-              onChange={() => toggle("no_reliance")}
-            />
-            <span>
-              I will <strong>not rely</strong> on this information for decisions about my
-              specific situation without consulting a professional.
-            </span>
-          </label>
-
-          <label className="disclaimer-modal__check-row">
-            <input
-              type="checkbox"
-              checked={checks.read_policies}
-              onChange={() => toggle("read_policies")}
-            />
-            <span>
-              I have read and accept the{" "}
-              <a href="/disclaimer" target="_blank" rel="noopener noreferrer">
-                Disclaimer
-              </a>{" "}
-              and{" "}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer">
-                Privacy Policy
-              </a>
-              .
+              I understand this is <strong>AI-generated general legal information</strong>,
+              not professional advice.
             </span>
           </label>
         </fieldset>
@@ -197,8 +163,8 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
           <button
             className="disclaimer-modal__btn disclaimer-modal__btn--accept"
             onClick={handleAccept}
-            disabled={!allChecked || posting}
-            aria-disabled={!allChecked || posting}
+            disabled={!acknowledged || posting}
+            aria-disabled={!acknowledged || posting}
           >
             {posting ? "Please wait…" : "I Accept — Continue"}
           </button>
@@ -223,4 +189,3 @@ export function DisclaimerModal({ onAccept, onDecline }: DisclaimerModalProps) {
     </div>
   );
 }
-

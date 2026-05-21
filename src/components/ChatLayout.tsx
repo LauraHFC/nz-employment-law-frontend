@@ -59,7 +59,6 @@ export function ChatLayout() {
           chart: result.chart,
           outOfRangeWarning: null,
           question: result.question,
-          riskBadge: result.risk_badge,
           refused: result.refused,
           traceId: result.trace_id ?? null,
           loading: false,

@@ -43,9 +43,9 @@ export function Message({ msg, onRetry }: MessageProps) {
           )}
         </div>
 
-        {/* Risk badge — agent endpoint responses only */}
-        {isBot && !msg.loading && !msg.error && msg.riskBadge && (
-          <RiskBadge badge={msg.riskBadge} />
+        {/* Risk badge — Sprint 6: only render when refused=true */}
+        {isBot && !msg.loading && !msg.error && msg.refused && (
+          <RiskBadge />
         )}
 
         {/* Chart — data / hybrid responses */}

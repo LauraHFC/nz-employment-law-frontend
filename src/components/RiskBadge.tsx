@@ -1,51 +1,24 @@
 "use client";
-// RiskBadge.tsx — per-message risk level indicator (v4 risk controls)
-// Keyed off AgentQueryResponse.risk_badge field.
+// RiskBadge.tsx — Sprint 6 simplified
 //
-// Colours:
-//   general_info      → grey   (informational, low risk)
-//   high_care         → amber  (employment/tax — handle with care)
-//   please_get_advice → red    (H1/H2 domains — strongly recommend legal advice)
-//   refused           → dark   (refused — referral only)
+// Sprint 4 had 4 colour-coded tiers (general_info / high_care /
+// please_get_advice / refused) rendered on EVERY assistant message.
+// Sprint 6 tears that out — risk_badge is dropped from the API response,
+// and this component only renders for refused answers.
+//
+// Render-site (Message.tsx) must check `refused === true` before mounting.
 
-import type { AgentQueryResponse } from "@/lib/types";
-
-interface RiskBadgeProps {
-  badge: AgentQueryResponse["risk_badge"];
-}
-
-const BADGE_CONFIG: Record<
-  AgentQueryResponse["risk_badge"],
-  { label: string; emoji: string; className: string }
-> = {
-  general_info: {
-    label: "General information",
-    emoji: "ℹ️",
-    className: "risk-badge risk-badge--info",
-  },
-  high_care: {
-    label: "Handle with care — verify with a professional",
-    emoji: "⚠️",
-    className: "risk-badge risk-badge--care",
-  },
-  please_get_advice: {
-    label: "Please get legal advice",
-    emoji: "🔴",
-    className: "risk-badge risk-badge--advice",
-  },
-  refused: {
-    label: "Outside scope — referral provided",
-    emoji: "🚫",
-    className: "risk-badge risk-badge--refused",
-  },
-};
-
-export function RiskBadge({ badge }: RiskBadgeProps) {
-  const cfg = BADGE_CONFIG[badge] ?? BADGE_CONFIG["general_info"];
+export function RiskBadge() {
   return (
-    <div className={cfg.className} role="status" aria-label={`Risk level: ${cfg.label}`}>
-      <span aria-hidden="true">{cfg.emoji}</span>{" "}
-      <span className="risk-badge__label">{cfg.label}</span>
+    <div
+      className="risk-badge risk-badge--refused"
+      role="status"
+      aria-label="This question is outside the scope of this tool — referral provided"
+    >
+      <span aria-hidden="true">🚫</span>{" "}
+      <span className="risk-badge__label">
+        Outside scope — referral provided
+      </span>
     </div>
   );
 }

@@ -1,4 +1,16 @@
-// lib/types.ts — v4 (risk-control fields + consent) (hub endpoint)
+// lib/types.ts — Sprint 6 (slim risk-control fields)
+//
+// Sprint 6 changes vs v4:
+//   AgentQueryResponse:
+//     - DROPPED: intent_class, domain_tier, routing_outcome, risk_badge,
+//                classifier_confidence
+//     - KEPT:    domain_label, crisis_route_fired, regeneration_count,
+//                refused, refusal_reason, trace_id
+//   ChatMessage:
+//     - DROPPED: riskBadge (per-message badge tier removed; RiskBadge now
+//                renders only when refused=true)
+//   ConsentAcknowledgeRequest:
+//     - checkbox_states is now a single {acknowledged: bool} (was 3 keys)
 
 // ── Legacy types (kept for backward compat) ───────────────────────────────────
 export interface Topic {
@@ -21,8 +33,7 @@ export interface ChatMessage {
   chart?: ChartConfig | null;
   outOfRangeWarning?: string | null;
   intent?: HubQueryResponse["intent"];
-  // Risk-control fields (agent endpoint)
-  riskBadge?: AgentQueryResponse["risk_badge"];
+  // Sprint 6: refused drives the only risk-badge render site.
   refused?: boolean;
   // Observability (Sprint 5)
   traceId?: string | null;
@@ -62,7 +73,7 @@ export interface HubQueryResponse {
   chart: ChartConfig | null;
 }
 
-// ── Agent endpoint types (v4 — risk-control pipeline) ─────────────────────────
+// ── Agent endpoint types (Sprint 6 — slim risk-control) ───────────────────────
 
 export interface AgentQueryResponse {
   question: string;
@@ -73,19 +84,15 @@ export interface AgentQueryResponse {
   refused: boolean;
   refusal_reason: string | null;
   chart: ChartConfig | null;
-  // Risk-control metadata
-  intent_class: "LOOKUP" | "ADVICE" | "HIGH_STAKES";
-  domain_tier: "H1" | "H2" | "H3" | "M" | "L";
+  // Slim risk-control metadata (Sprint 6)
   domain_label: string;
-  routing_outcome: "DIRECT_ANSWER" | "STRUCTURED_INFORMATIONAL" | "STRUCTURED_ADVICE_SKELETON" | "REFUSE_WITH_REFERRAL";
   crisis_route_fired: boolean;
   regeneration_count: number;
-  risk_badge: "general_info" | "high_care" | "please_get_advice" | "refused";
   // Observability (Sprint 5)
   trace_id: string | null;
 }
 
-// ── Consent types (v4) ────────────────────────────────────────────────────────
+// ── Consent types (Sprint 6) ──────────────────────────────────────────────────
 
 export type ConsentEventType =
   | "first_message_disclaimer"
@@ -96,7 +103,8 @@ export type ConsentEventType =
 export interface ConsentAcknowledgeRequest {
   session_id: string;
   event_type: ConsentEventType;
-  checkbox_states: { general_info: boolean; no_reliance: boolean; read_policies: boolean };
+  // Sprint 6: single-checkbox model. Backend still accepts the freeform dict.
+  checkbox_states: Record<string, boolean>;
   user_id?: string;
   user_agent?: string;
   ui_locale?: string;

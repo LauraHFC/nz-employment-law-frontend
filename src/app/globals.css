@@ -176,7 +176,7 @@ body {
 .welcome-heading h2 { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
 .welcome-heading p { font-size: .83rem; color: var(--text-secondary); max-width: 420px; line-height: 1.65; }
 .chips-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: 1fr;
   gap: 9px; width: 100%; max-width: 560px;
 }
 .chip {
@@ -397,11 +397,12 @@ body {
   .sb-close  { display: flex; }
   .hamburger { display: flex; }
   .chat-area { padding: 16px 12px 10px; gap: 14px; }
-  .welcome   { gap: 18px; padding: 16px 0; }
-  .welcome-icon { width: 48px; height: 48px; font-size: 22px; }
+  .welcome   { gap: 12px; padding: 10px 0; }
+  .welcome-icon { width: 44px; height: 44px; font-size: 20px; }
   .welcome-heading h2 { font-size: 1.05rem; }
-  .chips-grid { grid-template-columns: 1fr; max-width: 100%; }
-  .chip { font-size: .79rem; padding: 11px 13px; }
+  .welcome-heading p { font-size: .78rem; line-height: 1.5; }
+  .chips-grid { grid-template-columns: 1fr; max-width: 100%; gap: 7px; }
+  .chip { font-size: .79rem; padding: 9px 13px; }
   .bubble { max-width: 92%; font-size: .83rem; padding: 10px 13px; }
   .msg    { gap: 8px; }
   .avatar { width: 26px; height: 26px; font-size: 12px; }
@@ -416,7 +417,12 @@ body {
 
 @media (max-width: 400px) {
   .topbar-title h1 { font-size: .76rem; }
-  .chips-grid { gap: 7px; }
+  .welcome   { gap: 10px; padding: 6px 0; }
+  .welcome-icon { width: 40px; height: 40px; font-size: 18px; }
+  .welcome-heading h2 { font-size: .95rem; }
+  .welcome-heading p { font-size: .74rem; }
+  .chips-grid { gap: 6px; }
+  .chip { font-size: .76rem; padding: 8px 12px; }
 }
 
 /* ── Risk badges (v4) ─────────────────────────────────────────────────────────

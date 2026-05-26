@@ -44,6 +44,14 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
             <li>Wages, hours &amp; workplace rights</li>
           </ul>
           <br />
+          <strong>Tenancy law:</strong>
+          <ul>
+            <li>Tenancy agreements &amp; bonds</li>
+            <li>Rent, repairs &amp; Healthy Homes</li>
+            <li>Ending a tenancy &amp; Tenancy Tribunal</li>
+            <li>Pet consent, boarding houses &amp; flatting</li>
+          </ul>
+          <br />
           <strong>Tax rules:</strong>
           <ul>
             <li>GST registration &amp; obligations</li>
@@ -60,7 +68,7 @@ export function Sidebar({ open, onClose, onModal }: SidebarProps) {
           </ul>
           <br />
           <strong>Data sources:</strong><br />
-          Official NZ government websites, Inland Revenue (IRD) &amp; Stats NZ.
+          Official NZ government websites, Tenancy Services, Inland Revenue (IRD) &amp; Stats NZ.
           <br /><br />
           <em>General information only — not legal or tax advice. For your specific situation, consult a qualified employment lawyer, tax advisor, or accountant.</em>
         </div>

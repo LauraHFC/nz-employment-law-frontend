@@ -176,7 +176,7 @@ body {
 .welcome-heading h2 { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
 .welcome-heading p { font-size: .83rem; color: var(--text-secondary); max-width: 420px; line-height: 1.65; }
 .chips-grid {
-  display: grid; grid-template-columns: 1fr;
+  display: grid; grid-template-columns: 1fr 1fr;
   gap: 9px; width: 100%; max-width: 560px;
 }
 .chip {
@@ -187,7 +187,7 @@ body {
   color: var(--text-secondary); cursor: pointer;
   line-height: 1.45; display: flex; align-items: flex-start; gap: 7px;
   transition: border-color .15s, box-shadow .15s, background .15s, color .15s;
-  text-wrap: pretty;
+  text-wrap: pretty; text-align: left;
 }
 .chip:hover {
   background: var(--surface-card); border-color: var(--primary-mid);

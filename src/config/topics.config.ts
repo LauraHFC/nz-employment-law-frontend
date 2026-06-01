@@ -17,19 +17,19 @@ export const TOPIC_UI_CONFIG: Record<string, TopicUIConfig> = {
       "What is the minimum wage in NZ?",
       "What are my rights if I'm made redundant?",
       "How do GST rules apply to small businesses?",
-      "How is PAYE calculated on my salary?",
       "Can my landlord increase the rent whenever they want?",
-      "What are the Healthy Homes standards for rentals?",
-      "How has the unemployment rate changed over time?",
+      "I bought a faulty product — can I get a refund?",
+      "What are my rights with door-to-door sales?",
+      "How do I file a claim at the Disputes Tribunal?",
       "Compare male vs female earnings by industry",
     ],
-    chips: ["💼", "🚪", "🧾", "💰", "🏠", "🔑", "📈", "⚖️"],
-    inputPlaceholder: "Ask about NZ law, tax, tenancy, or labour market…",
+    chips: ["💼", "🚪", "🧾", "🏠", "🛒", "🚪", "⚖️", "📈"],
+    inputPlaceholder: "Ask about NZ law, tax, tenancy, consumer rights, or labour market…",
     sidebarDescription:
-      "Knowledge from official NZ government sources — employment law, tenancy law, tax rules, and labour market statistics. Information only, not legal or tax advice.",
+      "Knowledge from official NZ government sources — employment law, tenancy law, tax rules, consumer protection, and labour market statistics. Information only, not legal or tax advice.",
     emptyStateTitle: "Find your way through NZ law",
     emptyStateSubtitle:
-      "Employment law · Tenancy law · Tax rules · Labour market data · Powered by official NZ government sources",
+      "Employment · Tenancy · Tax · Consumer rights · Labour market · Powered by official NZ government sources",
   },
 
   // ── Add future topics below — no other file needs to change ─────────────────
